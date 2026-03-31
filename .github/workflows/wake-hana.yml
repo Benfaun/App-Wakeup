@@ -16,7 +16,7 @@ jobs:
             "${{ secrets.UAA_URL }}/oauth/token" \
             -u "${{ secrets.SM_CLIENT_ID }}:${{ secrets.SM_CLIENT_SECRET }}" \
             -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=client_credentials" \
+            -d "grant_type=client_credentials&token_format=opaque&response_type=token" \
             | jq -r '.access_token')
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
