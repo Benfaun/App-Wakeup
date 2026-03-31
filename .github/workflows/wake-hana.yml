@@ -1,0 +1,35 @@
+name: Wake up HANA Cloud
+
+on:
+  schedule:
+    - cron: '0 11 * * 1-5'  # 8am Santiago invierno (UTC-3)
+  workflow_dispatch:         # permite ejecutarlo manualmente también
+
+jobs:
+  wake-hana:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get OAuth Token
+        id: token
+        run: |
+          TOKEN=$(curl -s -X POST \
+            "${{ secrets.UAA_URL }}/oauth/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials&client_id=${{ secrets.SM_CLIENT_ID }}&client_secret=${{ secrets.SM_CLIENT_SECRET }}" \
+            | jq -r '.access_token')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Start HANA Cloud
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH \
+            "${{ secrets.SM_URL }}/v1/service_instances/${{ secrets.HANA_INSTANCE_ID }}" \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d '{"parameters": {"data": {"serviceStopped": false}}}')
+          echo "HTTP Status: $RESPONSE"
+          if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 300 ]; then
+            echo "✅ HANA Cloud iniciada correctamente"
+          else
+            echo "❌ Error al iniciar HANA Cloud"
+            exit 1
+          fi
