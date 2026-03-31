@@ -2,8 +2,8 @@ name: Wake up HANA Cloud
 
 on:
   schedule:
-    - cron: '0 11 * * 1-5'  # 8am Santiago invierno (UTC-3)
-  workflow_dispatch:         # permite ejecutarlo manualmente también
+    - cron: '0 11 * * 1-5'
+  workflow_dispatch:
 
 jobs:
   wake-hana:
